@@ -22,3 +22,5 @@ function misc:SendNotif(var1,var2,dur)
 	wait(1)
 	Frame.Parent:Destroy()
 end
+
+return misc
