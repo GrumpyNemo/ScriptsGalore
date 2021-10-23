@@ -1,11 +1,10 @@
 local misc = {}
 
 function misc:SendNotif(var1,var2,dur)
-	if not SubFolder_Ui:FindFirstChild("NotifGui") then
-		game:GetObjects("rbxassetid://7544848857")[1].Parent = nil
-	end
 
-	local NotifGui = SubFolder_Ui["NotifGui"]
+	game:GetObjects("rbxassetid://7544848857")[1].Parent = game.Workspace.Terrain
+
+	local NotifGui = game.Workspace.Terrain["NotifGui"]
 	local NotifGuiClone = NotifGui:Clone()
 	local Frame = NotifGuiClone.Frame
 	local Title = Frame.Title
