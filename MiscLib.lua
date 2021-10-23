@@ -11,7 +11,7 @@ function misc:SendNotif(var1,var2,dur)
 	local Title = Frame.Title
 	local Description = Frame.Description
 
-	NotifGuiClone.Parent = game.Players.LocalPlayer.PlayerGui
+	NotifGuiClone.Parent = game.CoreGui
 	Title.Text = var1
 	Description.Text = var2
 	Frame.Position = UDim2.new(1.35,0,0.8,0)
