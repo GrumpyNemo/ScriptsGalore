@@ -65,6 +65,11 @@ function lib:setColor(color)
 
 end
 
+function lib:randomColor()
+    local RandomValue = math.random(1,#colors)
+    return colors[RandomValue]
+end
+
 function lib:addInput(trigger,callback)
     RunService.RenderStepped:Connect(function()
         local input = rconsoleinput(input)
