@@ -2,7 +2,7 @@
 local lib = {}
 local RunService = game:GetService("RunService")
 
-local colors = {
+local MTcolors = {
     ["Black"] = {"@@BLACK@@","Black"},
     ["Blue"] = {"@@BLUE@@","Blue"},
     ["Green"] = {"@@GREEN@@","Green"},
@@ -19,8 +19,24 @@ local colors = {
     ["Light Magenta"] = {"@@LIGHT_MAGENTA@@","Light Magenta"},
     ["Yellow"] = {"@@YELLOW@@","Yellow"},
     ["White"] = {"@@WHITE@@","White"}
-
-
+}
+local colors = {
+    "Black",
+    "Blue",
+    "Green",
+    "Cyan",
+    "Red",
+    "Magenta",
+    "Brown",
+    "Light Gray",
+    "Dark Gray",
+    "Light Blue",
+    "Light Green",
+    "Light Cyan",
+    "Light Red",
+    "Light Magenta",
+    "Yellow",
+    "White"
 }
 
 function lib:add(name)
@@ -51,7 +67,7 @@ function lib:setColor(color)
     local canContinue = false
     local colorSelected = ""
 
-    for i,v in pairs(colors) do
+    for i,v in pairs(MTcolors) do
         if color == v[2] then
             canContinue = true
             colorSelected = v[1]
@@ -66,8 +82,7 @@ function lib:setColor(color)
 end
 
 function lib:randomColor()
-    local RandomValue = math.random(1,#colors)
-    return colors[RandomValue]
+    return colors[math.random(1,#colors)]
 end
 
 function lib:addInput(trigger,callback)
