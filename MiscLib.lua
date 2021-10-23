@@ -23,4 +23,8 @@ function misc:SendNotif(var1,var2,dur)
 	Frame.Parent:Destroy()
 end
 
+function misc:Print(a)
+    print(a)
+end
+
 return misc
