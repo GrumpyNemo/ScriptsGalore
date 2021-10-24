@@ -1,30 +1,139 @@
-local lib = {}
-local b='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-lib.Dec = function(data)
-	data = string.gsub(data, '[^'..b..'=]', '')
-	return (data:gsub('.', function(x)
-		if (x == '=') then return '' end
-		local r,f='',(b:find(x)-1)
-		for i=6,1,-1 do r=r..(f%2^i-f%2^(i-1)>0 and '1' or '0') end
-		return r;
-	end):gsub('%d%d%d?%d?%d?%d?%d?%d?', function(x)
-		if (#x ~= 8) then return '' end
-		local c=0
-		for i=1,8 do c=c+(x:sub(i,i)=='1' and 2^(8-i) or 0) end
-		return string.char(c)
-	end))
+local f = {}
+local initCharset = {
+	"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l",
+	"m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H",
+	"I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", ",", ".", "-", "_",
+	";", ":", "+", "#", "'", "*", "(", ")", "=", "[", "]", "{", "}", "/", "!", "$", "%", "&", "?", "<", ">", "|",
+	"@", " ", "~", "\\", "\n", "\""
+}
+
+function f._initCharset(charset)
+	f._charset = charset
+
+	f._charsetReverse = {}
+
+	for currentCharIndex in ipairs(f._charset) do
+		f._charsetReverse[f._charset[currentCharIndex]] = currentCharIndex
+	end
+
+	f._charsetLenght = #f._charset
 end
 
-lib.Enc = function(data)
-		return ((data:gsub('.', function(x) 
-			local r,b='',x:byte()
-			for i=8,1,-1 do r=r..(b%2^i-b%2^(i-1)>0 and '1' or '0') end
-			return r;
-		end)..'0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
-			if (#x < 6) then return '' end
-			local c=0
-			for i=1,6 do c=c+(x:sub(i,i)=='1' and 2^(6-i) or 0) end
-			return b:sub(c+1,c+1)
-		end)..({ '', '==', '=' })[#data%3+1])
+f._initCharset(initCharset)
+
+function f._rotateChar(currentChar, number)
+	if currentChar == nil then
+		return nil
+	end
+
+	return f._charset[((f._charsetReverse[currentChar] + number - 1) % f._charsetLenght) + 1]
 end
-return lib
+
+function f._stringToArray(givenString)
+	local newArray = {}
+	newArray._lenght = #givenString
+
+	for currentChar = 1, newArray._lenght do
+		newArray[currentChar] = string.sub(givenString, currentChar, currentChar)
+	end
+
+	return newArray
+end
+
+function f._arrayToString(givenArray, lenght)
+	local arrayLenght = #givenArray
+	if arrayLenght > lenght then
+		arrayLenght = lenght
+	end
+
+	local newString = ""
+
+	for currentChar = 1, arrayLenght do
+		newString = newString .. givenArray[currentChar]
+	end
+
+	return newString
+end
+
+function f._reverseArray(givenArray)
+	local newArray = {}
+
+	for currentField = 1, givenArray._lenght do
+		newArray[currentField] = givenArray[givenArray._lenght - currentField + 1]
+	end
+
+	newArray._lenght = givenArray._lenght
+
+	return newArray
+end
+
+function f.setCharset(newCharset)
+	f._initCharset(newCharset)
+end
+
+function f.getCharset()
+	return f._charset, f._charsetReverse
+end
+
+function f.encrypt(clearTextRaw, passphrase, salt, runs)
+	local encryptedText = f._stringToArray(salt .. clearTextRaw .. "42")
+	local passphraseArray = f._stringToArray(passphrase)
+
+	local rotationLenght = #clearTextRaw
+
+	for currentRun = 1, runs do
+		for currentClearTextChar = 1, encryptedText._lenght do
+			for currentPassphraseChar = 1, passphraseArray._lenght do
+				currentChar = currentClearTextChar - 1 + currentPassphraseChar
+
+				encryptedText[currentChar] = f._rotateChar(encryptedText[currentChar], f._charsetReverse[passphraseArray[currentPassphraseChar]])
+			end
+
+			encryptedText[currentClearTextChar] = f._rotateChar(encryptedText[currentClearTextChar], (currentClearTextChar * passphraseArray._lenght) % rotationLenght)
+
+			if encryptedText[currentClearTextChar - 1] ~= nil then
+				encryptedText[currentClearTextChar] = f._rotateChar(encryptedText[currentClearTextChar], f._charsetReverse[encryptedText[currentClearTextChar - 1]])
+			end
+		end
+
+		encryptedText = f._reverseArray(encryptedText)
+	end
+
+	encryptedText = f._reverseArray(encryptedText)
+
+	return ("N3M0__"..f._arrayToString(encryptedText, encryptedText._lenght))
+end
+
+function f.decrypt(encryptedText, passphrase, saltLenght, runs)
+	local NEMOLength = string.len(encryptedText)
+	encryptedText = string.sub(encryptedText,7,NEMOLength)
+	local decryptedText = f._stringToArray(encryptedText)
+	local passphraseArray = f._stringToArray(passphrase)
+
+	local rotationLenght = decryptedText._lenght - saltLenght - 2
+
+	for currentRun = 1, runs do
+		for currentEncryptedTextChar = decryptedText._lenght, 1, -1 do
+			if decryptedText[currentEncryptedTextChar - 1] ~= nil then
+				decryptedText[currentEncryptedTextChar] = f._rotateChar(decryptedText[currentEncryptedTextChar], -f._charsetReverse[decryptedText[currentEncryptedTextChar - 1]])
+			end
+		end
+
+		for currentEncryptedTextChar = 1, decryptedText._lenght do
+			for currentPassphraseChar = 1, passphraseArray._lenght do
+				currentChar = currentEncryptedTextChar - 1 + currentPassphraseChar
+
+				decryptedText[currentChar] = f._rotateChar(decryptedText[currentChar], -f._charsetReverse[passphraseArray[currentPassphraseChar]])
+			end
+
+			decryptedText[currentEncryptedTextChar] = f._rotateChar(decryptedText[currentEncryptedTextChar], -((currentEncryptedTextChar * passphraseArray._lenght) % rotationLenght))
+		end
+
+		decryptedText = f._reverseArray(decryptedText)
+	end
+
+	decryptedText = f._reverseArray(decryptedText)
+
+	return string.sub(f._arrayToString(decryptedText, decryptedText._lenght), saltLenght + 1, decryptedText._lenght - 2)
+end
+return
