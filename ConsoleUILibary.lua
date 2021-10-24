@@ -63,6 +63,10 @@ function lib:errorMessage(msg)
     rconsoleerr(msg)
 end
 
+function lib:clear()
+    rconsoleclear()
+end
+
 function lib:setColor(color)
     local canContinue = false
     local colorSelected = ""
