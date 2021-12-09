@@ -1,5 +1,5 @@
 local ListOfUsers = {
-"w6rds",
+--"w6rds",
  "DaGMan07"
 }
 return ListOfUsers
