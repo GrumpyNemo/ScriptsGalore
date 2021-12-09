@@ -1,9 +1,5 @@
-local List = {}
-ListOfUsers = {
+local ListOfUsers = {
 "w6rds",
  "DaGMan07"
 }
-function List:GetWhitelist()
-  return ListOfUsers
-end
-return List
+return ListOfUsers
